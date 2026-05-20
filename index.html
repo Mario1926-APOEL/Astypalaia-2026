@@ -180,11 +180,12 @@ body.dark-mode .badge-ok{background:#12382d;color:#7ee6c4}
 /* Editable trip cards */
 .editable-wrap{display:grid;gap:10px;margin-bottom:14px}
 .edit-card{background:#fff;border-radius:14px;border:1px solid rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.06);padding:1rem 1.25rem}
+.edit-help{font-size:12px;color:#7a7870;margin:-2px 0 8px;line-height:1.35}
 .edit-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .edit-card-title{font-size:15px;font-weight:700;color:#1a1a18}
 .edit-card-text{font-size:13px;line-height:1.45;color:#7a7870;white-space:pre-line}
 .edit-trip-btn{background:#2a5fa5;color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
-.edit-trip-area{width:100%;min-height:82px;border:1px solid rgba(0,0,0,.14);border-radius:10px;padding:9px 10px;font-size:13px;font-family:inherit;background:#f5f2ec;color:#1a1a18;outline:none;resize:vertical;margin-top:6px}
+.edit-trip-area{width:100%;min-height:150px;border:1px solid rgba(0,0,0,.14);border-radius:10px;padding:9px 10px;font-size:13px;font-family:inherit;background:#f5f2ec;color:#1a1a18;outline:none;resize:vertical;margin-top:6px}
 .edit-trip-actions{display:flex;gap:8px;margin-top:8px}
 .edit-trip-actions .cancel{background:#fff;color:#7a7870;border:1px solid rgba(0,0,0,.16)}
 body.dark-mode .edit-card{background:#1b2026;color:#f3f4f6;border-color:rgba(255,255,255,.10);box-shadow:0 2px 14px rgba(0,0,0,.35)}
@@ -213,7 +214,7 @@ body.dark-mode .edit-trip-actions .cancel{background:#1b2026;color:#cbd5e1;borde
 <div class="tab-bar" id="tabBar">
   <button class="tab-btn active" data-tab="trip">&#128197; Ταξίδι</button>
   <button class="tab-btn" data-tab="notes">&#128221; Notes</button>
-  <button class="tab-btn" data-tab="claude">&#10024; Ιδέες Claude</button>
+  <button class="tab-btn" data-tab="claude">&#10024; Ιδέες AI</button>
   <button class="tab-btn" data-tab="program">&#128336; Πρόγραμμα</button>
 </div>
 <div class="tab-bar" id="tabBar2">
@@ -227,9 +228,9 @@ body.dark-mode .edit-trip-actions .cancel{background:#1b2026;color:#cbd5e1;borde
   <div class="card"><div class="card-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div><div class="card-body"><p class="card-name">Αθήνα (ATH) &rarr; Αστυπάλαια (JTY)</p><p class="card-detail">Παρ. 28 Αυγ 2026 &bull; 16:50&ndash;17:45 &bull; GQ010 &bull; 0h 55m</p><span class="badge-ok">&#10003; Επιβεβαιωμένο</span></div><div class="card-price">GDTWTW<small>confirmation</small></div></div>
   <div class="card"><div class="card-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div><div class="card-body"><p class="card-name">Αστυπάλαια (JTY) &rarr; Αθήνα (ATH)</p><p class="card-detail">Τρ. 01 Σεπτ 2026 &bull; 11:30&ndash;12:25 &bull; GQ013 &bull; 0h 55m</p><span class="badge-ok">&#10003; Επιβεβαιωμένο</span></div></div>
   <div class="card"><div class="card-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div><div class="card-body"><p class="card-name">Αθήνα (ATH) &rarr; Λάρνακα (LCA)</p><p class="card-detail">Τρ. 01 Σεπτ 2026 &bull; 19:10&ndash;20:45 &bull; GQ602 &bull; 1h 35m</p><span class="badge-ok">&#10003; Επιβεβαιωμένο</span></div></div>
-  <p class="section-label">Accommodation &mdash; editable από την παρέα</p>
+  <p class="section-label">Accommodation &mdash; σημειώσεις / edit από την παρέα</p>
   <div id="editable-accommodation" class="editable-wrap"></div>
-  <p class="section-label">Μετακίνηση &mdash; editable από την παρέα</p>
+  <p class="section-label">Μετακίνηση &mdash; σημειώσεις / edit από την παρέα</p>
   <div id="editable-transport" class="editable-wrap"></div>
 </div>
 <div class="tab-pane" id="tab-notes">
@@ -406,10 +407,10 @@ setInterval(tick, 1000);
 // EDITABLE TRIP DETAILS - stored in shared JSONBin with the notes
 var tripDefaults = {
   accommodation: [
-    { title: "Μιχάλης & Μαρία", text: "Accommodation: γράψτε εδώ το ξενοδοχείο / διαμέρισμα\nDates: 28 Αυγ – 01 Σεπτ 2026\nStatus: εκκρεμεί / confirmed\nNotes: check-in, κόστος, link κράτησης" }
+    { title: "Accommodation Notes", text: "🏨 Διαμονή Μιχάλη & Μαρίας\n\nHotel / Apartment:\n\nCheck-in:\nCheck-out:\n\nAddress / Google Maps link:\n\nBooking status: εκκρεμεί / confirmed / paid\nCost:\n\nNotes:" }
   ],
   transport: [
-    { title: "Μετακίνηση στο νησί", text: "Rental car / scooter / taxi: γράψτε εδώ επιλογή\nAirport transfer: εκκρεμεί\nNotes: ώρες, κόστος, τηλέφωνα" }
+    { title: "Transportation Notes", text: "🚗 Μετακίνηση στην Αστυπάλαια\n\nCar / scooter / transfer:\n\nPickup location & time:\nReturn location & time:\n\nCost:\nContact / phone:\n\nNotes:" }
   ]
 };
 var editingTripCard = null;
@@ -430,10 +431,12 @@ function renderTripCards(){
       div.className = "edit-card";
       if (editingTripCard === key) {
         div.innerHTML = "<div class='edit-card-head'><div class='edit-card-title'>" + escapeHtml(card.title) + "</div></div>" +
+          "<div class='edit-help'>Γράψτε ή αλλάξτε τα στοιχεία εδώ και πατήστε Save. Οι αλλαγές φαίνονται σε όλους.</div>" +
           "<textarea class='edit-trip-area' id='trip-edit-" + key + "'>" + escapeHtml(card.text) + "</textarea>" +
           "<div class='edit-trip-actions'><button class='edit-trip-btn' data-trip-save='"+key+"'>Save</button><button class='edit-trip-btn cancel' data-trip-cancel='1'>Cancel</button></div>";
       } else {
-        div.innerHTML = "<div class='edit-card-head'><div class='edit-card-title'>" + escapeHtml(card.title) + "</div><button class='edit-trip-btn' data-trip-edit='"+key+"'>Edit</button></div>" +
+        div.innerHTML = "<div class='edit-card-head'><div class='edit-card-title'>" + escapeHtml(card.title) + "</div><button class='edit-trip-btn' data-trip-edit='"+key+"'>Edit notes</button></div>" +
+          "<div class='edit-help'>Πατήστε Edit notes για να συμπληρώσετε / αλλάξετε τα στοιχεία.</div>" +
           "<div class='edit-card-text'>" + escapeHtml(card.text) + "</div>";
       }
       box.appendChild(div);

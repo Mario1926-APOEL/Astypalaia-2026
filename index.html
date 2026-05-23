@@ -412,6 +412,21 @@ body.dark-mode .edit-trip-area{background:#11161c;color:#f3f4f6;border-color:rgb
 body.dark-mode .edit-trip-actions .cancel{background:#1b2026;color:#cbd5e1;border-color:rgba(255,255,255,.16)}
 
 
+
+/* Always-visible trip information boxes */
+.trip-fill-card{background:#fff;border-radius:14px;border:1px solid rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.06);padding:1rem 1.25rem;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.trip-fill-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.trip-fill-body{flex:1;min-width:0}
+.trip-fill-title{font-size:15px;font-weight:700;color:#2a5fa5;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+.trip-fill-area{width:100%;min-height:92px;border:1px solid rgba(0,0,0,.16);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;color:#1a1a18;outline:none;resize:vertical;line-height:1.45}
+.trip-fill-area:focus{border-color:#2a5fa5;box-shadow:0 0 0 3px rgba(42,95,165,.12)}
+.trip-fill-save{font-size:11px;color:#7a7870;margin-top:6px}
+body.dark-mode .trip-fill-card{background:#1b2026;color:#f3f4f6;border-color:rgba(255,255,255,.10);box-shadow:0 2px 14px rgba(0,0,0,.35)}
+body.dark-mode .trip-fill-title{color:#7fb0ff}
+body.dark-mode .trip-fill-area{background:#11161c;color:#f3f4f6;border-color:rgba(255,255,255,.16)}
+body.dark-mode .trip-fill-area::placeholder{color:#7b8491}
+body.dark-mode .trip-fill-save{color:#a7b0bd}
+
 </style>
 </head>
 <body>
@@ -516,11 +531,32 @@ body.dark-mode .edit-trip-actions .cancel{background:#1b2026;color:#cbd5e1;borde
   <div class="card"><div class="card-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div><div class="card-body"><p class="card-name">Αστυπάλαια (JTY) &rarr; Αθήνα (ATH)</p><p class="card-detail">Τρ. 01 Σεπτ 2026 &bull; 11:30&ndash;12:25 &bull; GQ013 &bull; 0h 55m</p><span class="badge-ok">&#10003; Επιβεβαιωμένο</span></div></div>
   <div class="card"><div class="card-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div><div class="card-body"><p class="card-name">Αθήνα (ATH) &rarr; Λάρνακα (LCA)</p><p class="card-detail">Τρ. 01 Σεπτ 2026 &bull; 19:10&ndash;20:45 &bull; GQ602 &bull; 1h 35m</p><span class="badge-ok">&#10003; Επιβεβαιωμένο</span></div></div>
   <p class="section-label">Accommodation &mdash; σημειώσεις / edit από την παρέα</p>
-  <div id="editable-accommodation" class="editable-wrap"></div>
+  <div class="trip-fill-card">
+    <div class="trip-fill-icon icon-hotel">&#128719;</div>
+    <div class="trip-fill-body">
+      <div class="trip-fill-title">Accommodation</div>
+      <textarea id="astAccommodationBox" class="trip-fill-area" placeholder="Γράψε εδώ τις πληροφορίες για τη διαμονή..."></textarea>
+      <div class="trip-fill-save">Αποθηκεύεται αυτόματα στη συσκευή.</div>
+    </div>
+  </div>
   <p class="section-label">Μετακίνηση &mdash; σημειώσεις / edit από την παρέα</p>
-  <div id="editable-transport" class="editable-wrap"></div>
+  <div class="trip-fill-card">
+    <div class="trip-fill-icon icon-car">&#128663;</div>
+    <div class="trip-fill-body">
+      <div class="trip-fill-title">Μετακίνηση</div>
+      <textarea id="astTransportBox" class="trip-fill-area" placeholder="Γράψε εδώ τις πληροφορίες για τη μετακίνηση..."></textarea>
+      <div class="trip-fill-save">Αποθηκεύεται αυτόματα στη συσκευή.</div>
+    </div>
+  </div>
   <p class="section-label">Πληροφορίες ταξιδιού &mdash; σημειώσεις / edit από την παρέα</p>
-  <div id="editable-travel" class="editable-wrap"></div>
+  <div class="trip-fill-card">
+    <div class="trip-fill-icon icon-flight"><svg class="flight-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+    <div class="trip-fill-body">
+      <div class="trip-fill-title">Πληροφορίες Ταξιδιού</div>
+      <textarea id="astTravelInfoBox" class="trip-fill-area" placeholder="Γράψε εδώ πληροφορίες για πτήσεις, ώρες, check-in, κρατήσεις κ.λπ..."></textarea>
+      <div class="trip-fill-save">Αποθηκεύεται αυτόματα στη συσκευή.</div>
+    </div>
+  </div>
 </div>
 <div class="tab-pane" id="tab-notes">
   <div class="name-bar"><label>&#128100; Όνομά σου:</label><input class="name-input" id="nameInput" type="text" placeholder="π.χ. Μαρία" maxlength="20"/><button class="name-save-btn" id="nameSaveBtn">OK</button></div>
@@ -953,29 +989,39 @@ function addNote(cat) {
 }
 
 function fetchData() {
-  fetch("https://api.jsonbin.io/v3/b/" + BIN_ID + "/latest", { headers: { "X-Master-Key": API_KEY } })
-  .then(function(r){ return r.json(); })
-  .then(function(data) {
-    var rec = data.record || {};
-    CATS.forEach(function(c){ if (!rec[c]) rec[c] = []; });
-    notesData = rec;
-    setStatus("&#10003; " + new Date().toLocaleTimeString("el-GR", {hour:"2-digit",minute:"2-digit"}));
-    renderNotes();
-    renderTripCards();
-  })
-  .catch(function(){ setStatus("&#10005; \u03a3\u03c6\u03ac\u03bb\u03bc\u03b1 \u03c3\u03cd\u03bd\u03b4\u03b5\u03c3\u03b7\u03c2."); });
+  // Local-first storage so all tabs work even when the page is opened as a local HTML file
+  // or when the external JSON service is blocked by browser/CORS/network.
+  try {
+    var saved = JSON.parse(localStorage.getItem("astypalaiaNotesData") || "null");
+    if (saved && typeof saved === "object") {
+      CATS.forEach(function(c){ if (!saved[c]) saved[c] = []; });
+      notesData = saved;
+    } else {
+      CATS.forEach(function(c){ if (!notesData[c]) notesData[c] = []; });
+    }
+  } catch(e) {
+    CATS.forEach(function(c){ if (!notesData[c]) notesData[c] = []; });
+  }
+  setStatus("✓ Local save ready");
+  renderNotes();
+  renderTripCards();
 }
 
 function saveData() {
-  setStatus("\u0391\u03c0\u03bf\u03b8\u03ae\u03ba\u03b5\u03c5\u03c3\u03b7...");
-  fetch("https://api.jsonbin.io/v3/b/" + BIN_ID, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
-    body: JSON.stringify(notesData)
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(){ setStatus("&#10003; " + new Date().toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})); })
-  .catch(function(){ setStatus("&#10005; \u03a3\u03c6\u03ac\u03bb\u03bc\u03b1."); });
+  try {
+    localStorage.setItem("astypalaiaNotesData", JSON.stringify(notesData));
+    setStatus("✓ Saved locally " + new Date().toLocaleTimeString("el-GR", {hour:"2-digit",minute:"2-digit"}));
+  } catch(e) {
+    setStatus("✕ Δεν αποθηκεύτηκε τοπικά.");
+  }
+  // Optional online backup. If it fails, the local save above still works.
+  try {
+    fetch("https://api.jsonbin.io/v3/b/" + BIN_ID, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+      body: JSON.stringify(notesData)
+    }).catch(function(){});
+  } catch(e) {}
 }
 
 // GALLERY
@@ -1696,7 +1742,6 @@ loadSharedPhotos();
 setInterval(loadSharedPhotos, 30000);
 
 fetchData();
-setInterval(fetchData, 30000);
 
 // ============================================================
 // PACKING LIST
@@ -1933,13 +1978,13 @@ loadWeather();
   var list=document.getElementById('priorityList');
   if(!input||!level||!addBtn||!list) return;
 
-  var storageKey='kefaloniaBookingPriorities';
+  var storageKey='astypalaiaBookingPriorities';
   var defaultItems=[
-    {text:'Accommodation / Μετακίνηση', level:'high'},
-    {text:'Ενοικίαση αυτοκινήτου', level:'high'},
-    {text:'Πληρωμή Yasemi / Ithaca apartments', level:'medium'},
-    {text:'Boat trip / Gidaki', level:'medium'},
-    {text:'Top restaurants για κράτηση', level:'low'}
+    {text:'Accommodation / Διαμονή', level:'high'},
+    {text:'Μετακίνηση στο νησί', level:'high'},
+    {text:'Πληροφορίες πτήσεων / check-in', level:'medium'},
+    {text:'Boat trip Κουνούπες / Κουτσομύτης', level:'medium'},
+    {text:'Restaurants / bars για κράτηση', level:'low'}
   ];
 
   function load(){
@@ -2145,5 +2190,42 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
 })();
 </script>
 
+
+<script>
+(function(){
+  var boxes=[
+    ['astAccommodationBox','astypalaia_accommodation_notes'],
+    ['astTransportBox','astypalaia_transport_notes'],
+    ['astTravelInfoBox','astypalaia_travel_info_notes']
+  ];
+  boxes.forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(!el) return;
+    el.value=localStorage.getItem(pair[1]) || '';
+    el.addEventListener('input',function(){ localStorage.setItem(pair[1], el.value); });
+  });
+})();
+</script>
+
+<script>
+(function(){
+  // Extra safety: make every text box / + button responsive after all scripts are loaded.
+  function byId(id){return document.getElementById(id);}
+  window.addEventListener('load', function(){
+    try{
+      document.querySelectorAll('.add-note-btn').forEach(function(btn){
+        btn.onclick = function(){ if (typeof addNote === 'function') addNote(btn.getAttribute('data-cat')); };
+      });
+      document.querySelectorAll('input[id^="inp-"]').forEach(function(inp){
+        inp.onkeydown = function(e){ if(e.key === 'Enter' && typeof addNote === 'function') addNote(inp.id.replace('inp-','')); };
+      });
+      var pBtn=byId('priorityAddBtn'), pInp=byId('priorityInput');
+      if(pBtn && pInp && !pBtn.dataset.fixed){
+        pBtn.dataset.fixed='1';
+      }
+    }catch(e){ console.warn('fallback bindings', e); }
+  });
+})();
+</script>
 </body>
 </html>

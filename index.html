@@ -2227,63 +2227,140 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
   });
 })();
 </script>
-  // ===== SIMPLE STORAGE FIX =====
-        <div class="note-text">${note}</div>
-      </div>
-      <button class="btn-delete">✕</button>
-    `;
 
-    div.querySelector('.btn-delete').onclick = ()=>{
-      appData[cat].splice(index,1);
-      saveData();
-      renderNotes(cat);
-    };
 
-    wrap.appendChild(div);
-  });
-}
+<script id="astypalaia-local-fix-final">
+(function(){
+  'use strict';
+  const LS='astypalaia_final_local_v3';
+  const esc=s=>String(s==null?'':s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const $=id=>document.getElementById(id);
+  const data=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){return {}}})();
+  data.notes=data.notes||{}; data.priority=data.priority||[]; data.budget=data.budget||[]; data.fields=data.fields||{}; data.checks=data.checks||{};
+  function save(){localStorage.setItem(LS,JSON.stringify(data));}
 
-// ===== LOAD ALL NOTES =====
-[
-'ast-beaches',
-'ast-food',
-'ast-bars',
-'ast-visit',
-'ast-general',
-'day1',
-'day2',
-'day3',
-'day4',
-'day5'
-].forEach(renderNotes);
+  function activateTab(tab){
+    if(!tab) return;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
 
-// ===== PRIORITY / TEXTAREAS =====
-document.querySelectorAll('textarea').forEach((ta,index)=>{
+  function bindTabs(){
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+      btn.addEventListener('click',e=>{e.preventDefault();activateTab(btn.dataset.tab);},true);
+    });
+    document.querySelectorAll('[data-jump]').forEach(btn=>{
+      btn.addEventListener('click',e=>{e.preventDefault();activateTab(btn.dataset.jump);},true);
+    });
+  }
 
-  const key = 'textarea_' + index;
+  function catFromInputId(id){return (id||'').replace(/^inp-/,'');}
+  function getName(){return ($('nameInput')&&$('nameInput').value.trim())||localStorage.getItem('astypalaiaUserName')||'Guest';}
+  function addNoteLocal(cat){
+    const input=$('inp-'+cat); if(!input) return;
+    const text=input.value.trim(); if(!text) return;
+    data.notes[cat]=data.notes[cat]||[];
+    data.notes[cat].push({text,author:getName(),ts:Date.now()});
+    input.value=''; save(); renderNoteCat(cat); setStatus('Saved ✓');
+  }
+  function renderNoteCat(cat){
+    const wrap=$('notes-'+cat); if(!wrap) return;
+    const arr=data.notes[cat]||[];
+    wrap.innerHTML=arr.map((n,i)=>`<div class="note-item" data-i="${i}"><span class="note-author">${esc(n.author||'Guest')}</span><div class="note-main"><div class="note-text">${esc(n.text)}</div></div><div class="note-actions"><button type="button" class="btn-edit" data-local-edit-note="${esc(cat)}:${i}">✎</button><button type="button" class="btn-delete" data-local-del-note="${esc(cat)}:${i}">×</button></div></div>`).join('');
+  }
+  function renderAllNotes(){document.querySelectorAll('[id^="notes-"]').forEach(el=>renderNoteCat(el.id.replace(/^notes-/,'')));}
+  function setStatus(t){const s=$('syncStatus'); if(s) s.textContent=t;}
 
-  ta.value = appData[key] || '';
+  function bindNotes(){
+    const name=$('nameInput'); if(name){name.value=localStorage.getItem('astypalaiaUserName')||name.value||''; name.addEventListener('input',()=>{localStorage.setItem('astypalaiaUserName',name.value.trim());});}
+    const nameBtn=$('nameSaveBtn'); if(nameBtn) nameBtn.addEventListener('click',()=>{if(name)localStorage.setItem('astypalaiaUserName',name.value.trim());setStatus('Name saved ✓');},true);
+    document.addEventListener('click',e=>{
+      const add=e.target.closest&&e.target.closest('.add-note-btn');
+      if(add){e.preventDefault();e.stopImmediatePropagation();addNoteLocal(add.dataset.cat);return;}
+      const del=e.target.closest&&e.target.closest('[data-local-del-note]');
+      if(del){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=del.dataset.localDelNote.split(':');(data.notes[cat]||[]).splice(+i,1);save();renderNoteCat(cat);return;}
+      const edit=e.target.closest&&e.target.closest('[data-local-edit-note]');
+      if(edit){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=edit.dataset.localEditNote.split(':');const arr=data.notes[cat]||[];const nv=prompt('Edit note:',arr[+i]?.text||'');if(nv!==null&&nv.trim()){arr[+i].text=nv.trim();save();renderNoteCat(cat);}return;}
+    },true);
+    document.addEventListener('keydown',e=>{const inp=e.target.closest&&e.target.closest('input[id^="inp-"]'); if(inp&&e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addNoteLocal(catFromInputId(inp.id));}},true);
+    renderAllNotes(); setStatus('Local save ready ✓');
+  }
 
-  ta.addEventListener('input', ()=>{
-    appData[key] = ta.value;
-    saveData();
-  });
-});
+  function updateHomePriority(){
+    const count=$('pendingCountValue');
+    if(count) count.textContent=data.priority.length+' items';
 
-// ===== INPUTS =====
-document.querySelectorAll('input').forEach((inp,index)=>{
+    const firstPriority = data.priority && data.priority.length ? data.priority[0] : null;
+    const nextValue = $('nextBigStepValue');
+    const nextNote = $('nextBigStepNote');
 
-  if(inp.type === 'file') return;
+    if(firstPriority){
+      if(nextValue) nextValue.textContent = firstPriority.text;
+      if(nextNote) nextNote.textContent = 'Πρώτο σε σειρά προτεραιότητας από το Booking Priority.';
+    }else{
+      if(nextValue) nextValue.textContent = 'No priority set';
+      if(nextNote) nextNote.textContent = 'Πρόσθεσε item στο Booking Priority για να εμφανιστεί εδώ.';
+    }
 
-  const key = 'input_' + index;
+    const list=$('pendingPriorityList');
+    if(list){
+      list.innerHTML=data.priority.slice(0,4).map((it,i)=>`<div class="dash-mini-item"><strong>${i+1}. ${esc(it.text)}</strong><span>${esc(it.level)}</span></div>`).join('') || '<div class="dash-mini-item"><strong>No pending items</strong><span>✓</span></div>';
+    }
+  }
+  function renderPriority(){
+    const list=$('priorityList'); if(!list) return;
+    if(!data.priority.length){list.innerHTML='<div class="priority-empty">Δεν υπάρχει ακόμα booking priority. Πρόσθεσε το πρώτο item.</div>'; updateHomePriority(); return;}
+    list.innerHTML=data.priority.map((it,i)=>`<div class="priority-item"><div class="priority-rank">${i+1}</div><div class="priority-main"><div class="priority-name">${esc(it.text)}</div><div class="priority-meta"><span class="priority-chip ${esc(it.level)}">${esc(it.level)}</span></div></div><div class="priority-actions"><button class="priority-icon-btn" type="button" data-pri="up:${i}" ${i===0?'disabled':''}>↑</button><button class="priority-icon-btn" type="button" data-pri="down:${i}" ${i===data.priority.length-1?'disabled':''}>↓</button><button class="priority-icon-btn delete" type="button" data-pri="del:${i}">×</button></div></div>`).join('');
+    updateHomePriority();
+  }
+  function addPriority(){
+    const input=$('priorityInput'), level=$('priorityLevel'); if(!input) return;
+    const text=input.value.trim(); if(!text) return;
+    data.priority.push({text,level:level?level.value:'medium',ts:Date.now()}); input.value=''; save(); renderPriority();
+  }
+  function bindPriority(){
+    const btn=$('priorityAddBtn'); if(btn) btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();addPriority();},true);
+    const inp=$('priorityInput'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addPriority();}},true);
+    document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pri]'); if(!b)return; e.preventDefault();e.stopImmediatePropagation();const [act,idxs]=b.dataset.pri.split(':');const i=+idxs;if(act==='del')data.priority.splice(i,1);if(act==='up'&&i>0)[data.priority[i-1],data.priority[i]]=[data.priority[i],data.priority[i-1]];if(act==='down'&&i<data.priority.length-1)[data.priority[i+1],data.priority[i]]=[data.priority[i],data.priority[i+1]];save();renderPriority();},true);
+    renderPriority();
+  }
 
-  if(appData[key]) inp.value = appData[key];
+  function renderBudget(){
+    const total=data.budget.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+    if($('budgetTotal')) $('budgetTotal').textContent='€'+total.toFixed(2);
+    if($('budgetPerPerson')) $('budgetPerPerson').textContent='€'+(total/2).toFixed(2);
+    if($('budgetCount')) $('budgetCount').textContent=data.budget.length;
+    const list=$('budgetList'); if(!list) return;
+    if(!data.budget.length){list.innerHTML='<div class="budget-empty">Δεν έχουν προστεθεί ακόμα δαπάνες.</div>';return;}
+    const groups=['Μιχάλης','Μαρία','Όλοι'];
+    list.innerHTML=groups.map(g=>{
+      const items=data.budget.filter(x=>(x.who||'Όλοι')===g); if(!items.length)return '';
+      const sum=items.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+      return `<div class="budget-section-card"><div class="budget-section-head"><div class="budget-section-person">${esc(g)}</div><div class="budget-section-total">€${sum.toFixed(2)}</div></div><div class="budget-card-list">${items.map(x=>`<div class="budget-expense-card"><div class="budget-expense-icon">💶</div><div class="budget-expense-main"><div class="budget-expense-desc">${esc(x.desc)}</div><div class="budget-expense-meta">${esc(x.who||'Όλοι')}</div></div><div class="budget-expense-amt">€${(parseFloat(x.amount)||0).toFixed(2)}</div><button class="budget-delete-btn" type="button" data-budget-del="${x.id}">×</button></div>`).join('')}</div></div>`;
+    }).join('');
+  }
+  window.addBudgetItem=function(){
+    const d=$('budgetDesc'), a=$('budgetAmount'), w=$('budgetWho'); if(!d||!a)return;
+    const desc=d.value.trim(), amount=parseFloat(a.value); if(!desc||!amount){return;}
+    data.budget.push({id:Date.now()+Math.random().toString(16).slice(2),desc,amount,who:w?w.value:'Όλοι'}); d.value=''; a.value=''; save(); renderBudget();
+  };
+  function bindBudget(){
+    const b=document.querySelector('.budget-add-btn'); if(b)b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.addBudgetItem();},true);
+    document.addEventListener('click',e=>{const del=e.target.closest&&e.target.closest('[data-budget-del]'); if(!del)return; e.preventDefault();e.stopImmediatePropagation();data.budget=data.budget.filter(x=>x.id!==del.dataset.budgetDel);save();renderBudget();},true);
+    renderBudget();
+  }
 
-  inp.addEventListener('input', ()=>{
-    appData[key] = inp.value;
-    saveData();
-  });
-});
+  function bindFields(){
+    ['astAccommodationBox','astTransportBox','astTravelInfoBox'].forEach(id=>{const el=$(id); if(!el)return; el.value=data.fields[id]||localStorage.getItem(id)||''; el.addEventListener('input',()=>{data.fields[id]=el.value;save();});});
+    document.querySelectorAll('textarea:not(#astAccommodationBox):not(#astTransportBox):not(#astTravelInfoBox)').forEach((el,i)=>{if(!el.id)el.id='local_textarea_'+i; if(data.fields[el.id])el.value=data.fields[el.id]; el.addEventListener('input',()=>{data.fields[el.id]=el.value;save();});});
+    document.querySelectorAll('input[type="checkbox"]').forEach((el,i)=>{if(!el.id)el.id='local_check_'+i; if(el.id in data.checks)el.checked=!!data.checks[el.id]; el.addEventListener('change',()=>{data.checks[el.id]=el.checked;save();});});
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{bindTabs();bindNotes();bindPriority();bindBudget();bindFields();});
+  window.addEventListener('load',()=>{renderAllNotes();renderPriority();renderBudget();bindFields();});
+})();
 </script>
+
 </body>
 </html>

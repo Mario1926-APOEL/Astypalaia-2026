@@ -2227,5 +2227,63 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
   });
 })();
 </script>
+  // ===== SIMPLE STORAGE FIX =====
+        <div class="note-text">${note}</div>
+      </div>
+      <button class="btn-delete">✕</button>
+    `;
+
+    div.querySelector('.btn-delete').onclick = ()=>{
+      appData[cat].splice(index,1);
+      saveData();
+      renderNotes(cat);
+    };
+
+    wrap.appendChild(div);
+  });
+}
+
+// ===== LOAD ALL NOTES =====
+[
+'ast-beaches',
+'ast-food',
+'ast-bars',
+'ast-visit',
+'ast-general',
+'day1',
+'day2',
+'day3',
+'day4',
+'day5'
+].forEach(renderNotes);
+
+// ===== PRIORITY / TEXTAREAS =====
+document.querySelectorAll('textarea').forEach((ta,index)=>{
+
+  const key = 'textarea_' + index;
+
+  ta.value = appData[key] || '';
+
+  ta.addEventListener('input', ()=>{
+    appData[key] = ta.value;
+    saveData();
+  });
+});
+
+// ===== INPUTS =====
+document.querySelectorAll('input').forEach((inp,index)=>{
+
+  if(inp.type === 'file') return;
+
+  const key = 'input_' + index;
+
+  if(appData[key]) inp.value = appData[key];
+
+  inp.addEventListener('input', ()=>{
+    appData[key] = inp.value;
+    saveData();
+  });
+});
+</script>
 </body>
 </html>

@@ -445,9 +445,9 @@ body.dark-mode .trip-fill-save{color:#a7b0bd}
   <button class="tab-btn" data-tab="trip">&#128197; Ταξίδι</button>
   <button class="tab-btn" data-tab="notes">&#128221; Notes</button>
   <button class="tab-btn" data-tab="claude">&#10024; Ιδέες AI</button>
-  <button class="tab-btn" data-tab="maps">&#128205; Maps</button>
 </div>
 <div class="tab-bar" id="tabBar2">
+  <button class="tab-btn" data-tab="maps">&#128205; Maps</button>
   <button class="tab-btn" data-tab="program">&#128336; Πρόγραμμα</button>
   <button class="tab-btn" data-tab="gallery">&#127956; Inspiration</button>
   <button class="tab-btn" data-tab="photos">&#128247; Album</button>
@@ -730,6 +730,7 @@ body.dark-mode .trip-fill-save{color:#a7b0bd}
   <div style="text-align:center;">
     <button onclick="loadWeather()" class="upload-btn">🔄 Ανανέωση καιρού</button>
     <div style="font-size:11px;color:#aaa;margin-top:8px;">Δεδομένα: Open-Meteo</div>
+    <div id="weatherLastUpdated" style="font-size:11px;color:#aaa;margin-top:4px;">Τελευταία ενημέρωση: --</div>
   </div>
 </div>
 
@@ -1956,7 +1957,9 @@ async function loadWeather(){
   for(var i=0;i<locs.length;i++){
     var loc=locs[i];
     try {
-      var r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+loc.lat+"&longitude="+loc.lon+"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe%2FAthens");
+      var url="https://api.open-meteo.com/v1/forecast?latitude="+loc.lat+"&longitude="+loc.lon+"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe%2FAthens&_="+Date.now();
+      var r=await fetch(url,{cache:"no-store"});
+      if(!r.ok){ throw new Error("Weather request failed"); }
       var data=await r.json(), cur=data.current;
       var setEl=function(id,txt){var e=document.getElementById(id);if(e)e.textContent=txt;};
       setEl("wIcon"+loc.id,weatherEmoji(cur.weather_code));
@@ -1964,12 +1967,23 @@ async function loadWeather(){
       setEl("wDesc"+loc.id,weatherDesc(cur.weather_code));
       setEl("wHum"+loc.id,"💧 "+cur.relative_humidity_2m+"%");
       setEl("wWind"+loc.id,"💨 "+Math.round(cur.wind_speed_10m)+" km/h");
+      var updated=document.getElementById("weatherLastUpdated");
+      if(updated){
+        updated.textContent="Τελευταία ενημέρωση: "+new Date().toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
+      }
     } catch(e){ document.getElementById("wDesc"+loc.id)&&(document.getElementById("wDesc"+loc.id).textContent="Αδύνατη φόρτωση"); }
   }
 }
 function weatherEmoji(c){ if(c===0)return"☀️";if(c<=2)return"🌤️";if(c<=3)return"☁️";if(c<=49)return"🌫️";if(c<=59)return"🌦️";if(c<=69)return"🌧️";if(c<=79)return"❄️";if(c<=82)return"🌧️";if(c<=99)return"⛈️";return"🌡️"; }
 function weatherDesc(c){ if(c===0)return"Αίθριος";if(c<=2)return"Λίγα σύννεφα";if(c<=3)return"Συννεφιά";if(c<=49)return"Ομίχλη";if(c<=59)return"Ψιλόβροχο";if(c<=69)return"Βροχή";if(c<=79)return"Χιόνι";if(c<=99)return"Καταιγίδα";return"Άγνωστο"; }
 loadWeather();
+setInterval(loadWeather, 30 * 60 * 1000);
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden){ loadWeather(); }
+});
+document.querySelectorAll('[data-tab="weather"]').forEach(function(btn){
+  btn.addEventListener("click",function(){ loadWeather(); });
+});
 
 (function(){
   var input=document.getElementById('priorityInput');

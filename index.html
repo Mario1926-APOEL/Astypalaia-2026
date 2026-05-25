@@ -445,9 +445,9 @@ body.dark-mode .trip-fill-save{color:#a7b0bd}
   <button class="tab-btn" data-tab="trip">&#128197; Ταξίδι</button>
   <button class="tab-btn" data-tab="notes">&#128221; Notes</button>
   <button class="tab-btn" data-tab="claude">&#10024; Ιδέες AI</button>
+  <button class="tab-btn" data-tab="maps">&#128205; Maps</button>
 </div>
 <div class="tab-bar" id="tabBar2">
-  <button class="tab-btn" data-tab="maps">&#128205; Maps</button>
   <button class="tab-btn" data-tab="program">&#128336; Πρόγραμμα</button>
   <button class="tab-btn" data-tab="gallery">&#127956; Inspiration</button>
   <button class="tab-btn" data-tab="photos">&#128247; Album</button>
@@ -730,7 +730,6 @@ body.dark-mode .trip-fill-save{color:#a7b0bd}
   <div style="text-align:center;">
     <button onclick="loadWeather()" class="upload-btn">🔄 Ανανέωση καιρού</button>
     <div style="font-size:11px;color:#aaa;margin-top:8px;">Δεδομένα: Open-Meteo</div>
-    <div id="weatherLastUpdated" style="font-size:11px;color:#aaa;margin-top:4px;">Τελευταία ενημέρωση: --</div>
   </div>
 </div>
 
@@ -1957,9 +1956,7 @@ async function loadWeather(){
   for(var i=0;i<locs.length;i++){
     var loc=locs[i];
     try {
-      var url="https://api.open-meteo.com/v1/forecast?latitude="+loc.lat+"&longitude="+loc.lon+"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe%2FAthens&_="+Date.now();
-      var r=await fetch(url,{cache:"no-store"});
-      if(!r.ok){ throw new Error("Weather request failed"); }
+      var r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+loc.lat+"&longitude="+loc.lon+"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe%2FAthens");
       var data=await r.json(), cur=data.current;
       var setEl=function(id,txt){var e=document.getElementById(id);if(e)e.textContent=txt;};
       setEl("wIcon"+loc.id,weatherEmoji(cur.weather_code));
@@ -1967,23 +1964,12 @@ async function loadWeather(){
       setEl("wDesc"+loc.id,weatherDesc(cur.weather_code));
       setEl("wHum"+loc.id,"💧 "+cur.relative_humidity_2m+"%");
       setEl("wWind"+loc.id,"💨 "+Math.round(cur.wind_speed_10m)+" km/h");
-      var updated=document.getElementById("weatherLastUpdated");
-      if(updated){
-        updated.textContent="Τελευταία ενημέρωση: "+new Date().toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
-      }
     } catch(e){ document.getElementById("wDesc"+loc.id)&&(document.getElementById("wDesc"+loc.id).textContent="Αδύνατη φόρτωση"); }
   }
 }
 function weatherEmoji(c){ if(c===0)return"☀️";if(c<=2)return"🌤️";if(c<=3)return"☁️";if(c<=49)return"🌫️";if(c<=59)return"🌦️";if(c<=69)return"🌧️";if(c<=79)return"❄️";if(c<=82)return"🌧️";if(c<=99)return"⛈️";return"🌡️"; }
 function weatherDesc(c){ if(c===0)return"Αίθριος";if(c<=2)return"Λίγα σύννεφα";if(c<=3)return"Συννεφιά";if(c<=49)return"Ομίχλη";if(c<=59)return"Ψιλόβροχο";if(c<=69)return"Βροχή";if(c<=79)return"Χιόνι";if(c<=99)return"Καταιγίδα";return"Άγνωστο"; }
 loadWeather();
-setInterval(loadWeather, 30 * 60 * 1000);
-document.addEventListener("visibilitychange",function(){
-  if(!document.hidden){ loadWeather(); }
-});
-document.querySelectorAll('[data-tab="weather"]').forEach(function(btn){
-  btn.addEventListener("click",function(){ loadWeather(); });
-});
 
 (function(){
   var input=document.getElementById('priorityInput');
@@ -2243,15 +2229,61 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
 </script>
 
 
-<script id="astypalaia-local-fix-final">
+<script id="astypalaia-online-sync-final">
 (function(){
   'use strict';
-  const LS='astypalaia_final_local_v3';
+  const LS='astypalaia_final_online_v1';
+  const STATE_TABLE='astypalaia_app_state';
+  const STATE_ID='main';
+  const SUPA_URL=(typeof SUPABASE_URL!=='undefined'?SUPABASE_URL:'https://thecperzyfoaphjthnyf.supabase.co');
+  const SUPA_KEY=(typeof SUPABASE_ANON_KEY!=='undefined'?SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InRoZWNwZXJ6eWZvYXBoanRobnlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNzYyNzksImV4cCI6MjA5NDg1MjI3OX0.KciBKdrZK4DH79HUpkJ5EQxTYOW0N3o9s_4EcqIFNeM');
+  const ENDPOINT=SUPA_URL+'/rest/v1/'+STATE_TABLE;
   const esc=s=>String(s==null?'':s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const $=id=>document.getElementById(id);
-  const data=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){return {}}})();
-  data.notes=data.notes||{}; data.priority=data.priority||[]; data.budget=data.budget||[]; data.fields=data.fields||{}; data.checks=data.checks||{};
-  function save(){localStorage.setItem(LS,JSON.stringify(data));}
+  const headers=(extra)=>Object.assign({apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'},extra||{});
+  let onlineOK=false, loadingRemote=false, saveTimer=null, lastRemoteStamp=0;
+
+  let data=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){return {}}})();
+  function normalize(){
+    data.notes=data.notes||{}; data.priority=data.priority||[]; data.budget=data.budget||[]; data.fields=data.fields||{}; data.checks=data.checks||{}; data.updatedAt=data.updatedAt||0;
+  }
+  normalize();
+  function saveLocal(){localStorage.setItem(LS,JSON.stringify(data));}
+  function setStatus(t){const s=$('syncStatus'); if(s) s.textContent=t;}
+  function markChanged(){data.updatedAt=Date.now(); saveLocal(); queueRemoteSave(); renderAll();}
+  function queueRemoteSave(){clearTimeout(saveTimer); saveTimer=setTimeout(saveRemote,450);}
+  async function loadRemote(){
+    if(loadingRemote) return; loadingRemote=true;
+    try{
+      const r=await fetch(ENDPOINT+'?id=eq.'+encodeURIComponent(STATE_ID)+'&select=data,updated_at',{headers:headers()});
+      if(!r.ok) throw new Error(await r.text());
+      const rows=await r.json(); onlineOK=true;
+      if(rows && rows[0] && rows[0].data){
+        const remote=rows[0].data||{}; const remoteStamp=remote.updatedAt||Date.parse(rows[0].updated_at||0)||0;
+        lastRemoteStamp=remoteStamp;
+        if(remoteStamp>(data.updatedAt||0)){
+          data=remote; normalize(); saveLocal(); renderAll();
+        }else if((data.updatedAt||0)>remoteStamp){
+          queueRemoteSave();
+        }
+      }else{
+        queueRemoteSave();
+      }
+      setStatus('Online sync ενεργό ✓');
+    }catch(e){
+      onlineOK=false;
+      setStatus('Local save ενεργό — χρειάζεται Supabase table για online sync');
+      console.warn('Astypalaia online sync:',e);
+    }finally{loadingRemote=false;}
+  }
+  async function saveRemote(){
+    try{
+      const body={id:STATE_ID,data:data,updated_at:new Date(data.updatedAt||Date.now()).toISOString()};
+      const r=await fetch(ENDPOINT+'?on_conflict=id',{method:'POST',headers:headers({'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+      onlineOK=true; setStatus('Online saved ✓');
+    }catch(e){onlineOK=false; setStatus('Saved locally — online sync not connected'); console.warn('Astypalaia save remote:',e);}
+  }
 
   function activateTab(tab){
     if(!tab) return;
@@ -2259,85 +2291,45 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
     document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
     window.scrollTo({top:0,behavior:'smooth'});
   }
-
   function bindTabs(){
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
-      btn.addEventListener('click',e=>{e.preventDefault();activateTab(btn.dataset.tab);},true);
-    });
-    document.querySelectorAll('[data-jump]').forEach(btn=>{
-      btn.addEventListener('click',e=>{e.preventDefault();activateTab(btn.dataset.jump);},true);
-    });
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{btn.onclick=e=>{e.preventDefault();activateTab(btn.dataset.tab);};});
+    document.querySelectorAll('[data-jump]').forEach(btn=>{btn.onclick=e=>{e.preventDefault();activateTab(btn.dataset.jump);};});
   }
 
-  function catFromInputId(id){return (id||'').replace(/^inp-/,'');}
   function getName(){return ($('nameInput')&&$('nameInput').value.trim())||localStorage.getItem('astypalaiaUserName')||'Guest';}
-  function addNoteLocal(cat){
+  function addNote(cat){
     const input=$('inp-'+cat); if(!input) return;
     const text=input.value.trim(); if(!text) return;
     data.notes[cat]=data.notes[cat]||[];
-    data.notes[cat].push({text,author:getName(),ts:Date.now()});
-    input.value=''; save(); renderNoteCat(cat); setStatus('Saved ✓');
+    data.notes[cat].push({id:Date.now()+Math.random().toString(16).slice(2),text,author:getName(),ts:Date.now()});
+    input.value=''; markChanged();
   }
   function renderNoteCat(cat){
     const wrap=$('notes-'+cat); if(!wrap) return;
     const arr=data.notes[cat]||[];
-    wrap.innerHTML=arr.map((n,i)=>`<div class="note-item" data-i="${i}"><span class="note-author">${esc(n.author||'Guest')}</span><div class="note-main"><div class="note-text">${esc(n.text)}</div></div><div class="note-actions"><button type="button" class="btn-edit" data-local-edit-note="${esc(cat)}:${i}">✎</button><button type="button" class="btn-delete" data-local-del-note="${esc(cat)}:${i}">×</button></div></div>`).join('');
+    wrap.innerHTML=arr.map((n,i)=>`<div class="note-item"><span class="note-author">${esc(n.author||'Guest')}</span><div class="note-main"><div class="note-text">${esc(n.text)}</div></div><div class="note-actions"><button type="button" class="btn-edit" data-online-edit-note="${esc(cat)}:${i}">✎</button><button type="button" class="btn-delete" data-online-del-note="${esc(cat)}:${i}">×</button></div></div>`).join('');
   }
   function renderAllNotes(){document.querySelectorAll('[id^="notes-"]').forEach(el=>renderNoteCat(el.id.replace(/^notes-/,'')));}
-  function setStatus(t){const s=$('syncStatus'); if(s) s.textContent=t;}
-
-  function bindNotes(){
-    const name=$('nameInput'); if(name){name.value=localStorage.getItem('astypalaiaUserName')||name.value||''; name.addEventListener('input',()=>{localStorage.setItem('astypalaiaUserName',name.value.trim());});}
-    const nameBtn=$('nameSaveBtn'); if(nameBtn) nameBtn.addEventListener('click',()=>{if(name)localStorage.setItem('astypalaiaUserName',name.value.trim());setStatus('Name saved ✓');},true);
-    document.addEventListener('click',e=>{
-      const add=e.target.closest&&e.target.closest('.add-note-btn');
-      if(add){e.preventDefault();e.stopImmediatePropagation();addNoteLocal(add.dataset.cat);return;}
-      const del=e.target.closest&&e.target.closest('[data-local-del-note]');
-      if(del){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=del.dataset.localDelNote.split(':');(data.notes[cat]||[]).splice(+i,1);save();renderNoteCat(cat);return;}
-      const edit=e.target.closest&&e.target.closest('[data-local-edit-note]');
-      if(edit){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=edit.dataset.localEditNote.split(':');const arr=data.notes[cat]||[];const nv=prompt('Edit note:',arr[+i]?.text||'');if(nv!==null&&nv.trim()){arr[+i].text=nv.trim();save();renderNoteCat(cat);}return;}
-    },true);
-    document.addEventListener('keydown',e=>{const inp=e.target.closest&&e.target.closest('input[id^="inp-"]'); if(inp&&e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addNoteLocal(catFromInputId(inp.id));}},true);
-    renderAllNotes(); setStatus('Local save ready ✓');
-  }
 
   function updateHomePriority(){
-    const count=$('pendingCountValue');
-    if(count) count.textContent=data.priority.length+' items';
-
-    const firstPriority = data.priority && data.priority.length ? data.priority[0] : null;
-    const nextValue = $('nextBigStepValue');
-    const nextNote = $('nextBigStepNote');
-
-    if(firstPriority){
-      if(nextValue) nextValue.textContent = firstPriority.text;
-      if(nextNote) nextNote.textContent = 'Πρώτο σε σειρά προτεραιότητας από το Booking Priority.';
-    }else{
-      if(nextValue) nextValue.textContent = 'No priority set';
-      if(nextNote) nextNote.textContent = 'Πρόσθεσε item στο Booking Priority για να εμφανιστεί εδώ.';
-    }
-
+    if($('pendingCountValue')) $('pendingCountValue').textContent=data.priority.length+' items';
+    const first=data.priority[0];
+    if($('nextBigStepValue')) $('nextBigStepValue').textContent=first?first.text:'No priority set';
+    if($('nextBigStepNote')) $('nextBigStepNote').textContent=first?'Πρώτο σε σειρά προτεραιότητας από το Booking Priority.':'Πρόσθεσε item στο Booking Priority για να εμφανιστεί εδώ.';
     const list=$('pendingPriorityList');
-    if(list){
-      list.innerHTML=data.priority.slice(0,4).map((it,i)=>`<div class="dash-mini-item"><strong>${i+1}. ${esc(it.text)}</strong><span>${esc(it.level)}</span></div>`).join('') || '<div class="dash-mini-item"><strong>No pending items</strong><span>✓</span></div>';
-    }
+    if(list) list.innerHTML=data.priority.slice(0,4).map((it,i)=>`<div class="dash-mini-item"><strong>${i+1}. ${esc(it.text)}</strong><span>${esc(it.level||'medium')}</span></div>`).join('') || '<div class="dash-mini-item"><strong>No pending items</strong><span>✓</span></div>';
   }
   function renderPriority(){
     const list=$('priorityList'); if(!list) return;
     if(!data.priority.length){list.innerHTML='<div class="priority-empty">Δεν υπάρχει ακόμα booking priority. Πρόσθεσε το πρώτο item.</div>'; updateHomePriority(); return;}
-    list.innerHTML=data.priority.map((it,i)=>`<div class="priority-item"><div class="priority-rank">${i+1}</div><div class="priority-main"><div class="priority-name">${esc(it.text)}</div><div class="priority-meta"><span class="priority-chip ${esc(it.level)}">${esc(it.level)}</span></div></div><div class="priority-actions"><button class="priority-icon-btn" type="button" data-pri="up:${i}" ${i===0?'disabled':''}>↑</button><button class="priority-icon-btn" type="button" data-pri="down:${i}" ${i===data.priority.length-1?'disabled':''}>↓</button><button class="priority-icon-btn delete" type="button" data-pri="del:${i}">×</button></div></div>`).join('');
+    list.innerHTML=data.priority.map((it,i)=>`<div class="priority-item"><div class="priority-rank">${i+1}</div><div class="priority-main"><div class="priority-name">${esc(it.text)}</div><div class="priority-meta"><span class="priority-chip ${esc(it.level||'medium')}">${esc(it.level||'medium')}</span></div></div><div class="priority-actions"><button class="priority-icon-btn" type="button" data-online-pri="up:${i}" ${i===0?'disabled':''}>↑</button><button class="priority-icon-btn" type="button" data-online-pri="down:${i}" ${i===data.priority.length-1?'disabled':''}>↓</button><button class="priority-icon-btn delete" type="button" data-online-pri="del:${i}">×</button></div></div>`).join('');
     updateHomePriority();
   }
   function addPriority(){
     const input=$('priorityInput'), level=$('priorityLevel'); if(!input) return;
     const text=input.value.trim(); if(!text) return;
-    data.priority.push({text,level:level?level.value:'medium',ts:Date.now()}); input.value=''; save(); renderPriority();
-  }
-  function bindPriority(){
-    const btn=$('priorityAddBtn'); if(btn) btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();addPriority();},true);
-    const inp=$('priorityInput'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addPriority();}},true);
-    document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pri]'); if(!b)return; e.preventDefault();e.stopImmediatePropagation();const [act,idxs]=b.dataset.pri.split(':');const i=+idxs;if(act==='del')data.priority.splice(i,1);if(act==='up'&&i>0)[data.priority[i-1],data.priority[i]]=[data.priority[i],data.priority[i-1]];if(act==='down'&&i<data.priority.length-1)[data.priority[i+1],data.priority[i]]=[data.priority[i],data.priority[i+1]];save();renderPriority();},true);
-    renderPriority();
+    data.priority.push({id:Date.now()+Math.random().toString(16).slice(2),text,level:level?level.value:'medium',ts:Date.now()});
+    input.value=''; markChanged();
   }
 
   function renderBudget(){
@@ -2351,28 +2343,49 @@ try { renderTripCards(); } catch(e) { console.warn(e); }
     list.innerHTML=groups.map(g=>{
       const items=data.budget.filter(x=>(x.who||'Όλοι')===g); if(!items.length)return '';
       const sum=items.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
-      return `<div class="budget-section-card"><div class="budget-section-head"><div class="budget-section-person">${esc(g)}</div><div class="budget-section-total">€${sum.toFixed(2)}</div></div><div class="budget-card-list">${items.map(x=>`<div class="budget-expense-card"><div class="budget-expense-icon">💶</div><div class="budget-expense-main"><div class="budget-expense-desc">${esc(x.desc)}</div><div class="budget-expense-meta">${esc(x.who||'Όλοι')}</div></div><div class="budget-expense-amt">€${(parseFloat(x.amount)||0).toFixed(2)}</div><button class="budget-delete-btn" type="button" data-budget-del="${x.id}">×</button></div>`).join('')}</div></div>`;
+      return `<div class="budget-section-card"><div class="budget-section-head"><div class="budget-section-person">${esc(g)}</div><div class="budget-section-total">€${sum.toFixed(2)}</div></div><div class="budget-card-list">${items.map(x=>`<div class="budget-expense-card"><div class="budget-expense-icon">💶</div><div class="budget-expense-main"><div class="budget-expense-desc">${esc(x.desc)}</div><div class="budget-expense-meta">${esc(x.who||'Όλοι')}</div></div><div class="budget-expense-amt">€${(parseFloat(x.amount)||0).toFixed(2)}</div><button class="budget-delete-btn" type="button" data-online-budget-del="${esc(x.id)}">×</button></div>`).join('')}</div></div>`;
     }).join('');
   }
-  window.addBudgetItem=function(){
-    const d=$('budgetDesc'), a=$('budgetAmount'), w=$('budgetWho'); if(!d||!a)return;
-    const desc=d.value.trim(), amount=parseFloat(a.value); if(!desc||!amount){return;}
-    data.budget.push({id:Date.now()+Math.random().toString(16).slice(2),desc,amount,who:w?w.value:'Όλοι'}); d.value=''; a.value=''; save(); renderBudget();
-  };
-  function bindBudget(){
-    const b=document.querySelector('.budget-add-btn'); if(b)b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.addBudgetItem();},true);
-    document.addEventListener('click',e=>{const del=e.target.closest&&e.target.closest('[data-budget-del]'); if(!del)return; e.preventDefault();e.stopImmediatePropagation();data.budget=data.budget.filter(x=>x.id!==del.dataset.budgetDel);save();renderBudget();},true);
-    renderBudget();
+  function addBudget(){
+    const d=$('budgetDesc'), a=$('budgetAmount'), w=$('budgetWho'); if(!d||!a) return;
+    const desc=d.value.trim(), amount=parseFloat(a.value); if(!desc||!amount) return;
+    data.budget.push({id:Date.now()+Math.random().toString(16).slice(2),desc,amount,who:w?w.value:'Όλοι',ts:Date.now()}); d.value=''; a.value=''; markChanged();
   }
+  window.addBudgetItem=addBudget;
 
-  function bindFields(){
-    ['astAccommodationBox','astTransportBox','astTravelInfoBox'].forEach(id=>{const el=$(id); if(!el)return; el.value=data.fields[id]||localStorage.getItem(id)||''; el.addEventListener('input',()=>{data.fields[id]=el.value;save();});});
-    document.querySelectorAll('textarea:not(#astAccommodationBox):not(#astTransportBox):not(#astTravelInfoBox)').forEach((el,i)=>{if(!el.id)el.id='local_textarea_'+i; if(data.fields[el.id])el.value=data.fields[el.id]; el.addEventListener('input',()=>{data.fields[el.id]=el.value;save();});});
-    document.querySelectorAll('input[type="checkbox"]').forEach((el,i)=>{if(!el.id)el.id='local_check_'+i; if(el.id in data.checks)el.checked=!!data.checks[el.id]; el.addEventListener('change',()=>{data.checks[el.id]=el.checked;save();});});
+  function renderFields(){
+    ['astAccommodationBox','astTransportBox','astTravelInfoBox'].forEach(id=>{const el=$(id); if(el && document.activeElement!==el) el.value=data.fields[id]||'';});
+    document.querySelectorAll('textarea:not(#astAccommodationBox):not(#astTransportBox):not(#astTravelInfoBox)').forEach((el,i)=>{if(!el.id)el.id='online_textarea_'+i; if(document.activeElement!==el) el.value=data.fields[el.id]||'';});
+    document.querySelectorAll('input[type="checkbox"]').forEach((el,i)=>{if(!el.id)el.id='online_check_'+i; if(el.id in data.checks) el.checked=!!data.checks[el.id];});
   }
+  function renderAll(){renderAllNotes();renderPriority();renderBudget();renderFields();}
 
-  document.addEventListener('DOMContentLoaded',()=>{bindTabs();bindNotes();bindPriority();bindBudget();bindFields();});
-  window.addEventListener('load',()=>{renderAllNotes();renderPriority();renderBudget();bindFields();});
+  function bindAll(){
+    bindTabs();
+    const name=$('nameInput'); if(name){name.value=localStorage.getItem('astypalaiaUserName')||name.value||''; name.addEventListener('input',()=>{localStorage.setItem('astypalaiaUserName',name.value.trim());});}
+    const nameBtn=$('nameSaveBtn'); if(nameBtn) nameBtn.onclick=()=>{if(name)localStorage.setItem('astypalaiaUserName',name.value.trim()); setStatus('Name saved ✓');};
+
+    document.addEventListener('click',function(e){
+      const add=e.target.closest&&e.target.closest('.add-note-btn'); if(add){e.preventDefault();e.stopImmediatePropagation();addNote(add.dataset.cat);return;}
+      const del=e.target.closest&&e.target.closest('[data-online-del-note]'); if(del){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=del.dataset.onlineDelNote.split(':');(data.notes[cat]||[]).splice(+i,1);markChanged();return;}
+      const edit=e.target.closest&&e.target.closest('[data-online-edit-note]'); if(edit){e.preventDefault();e.stopImmediatePropagation();const [cat,i]=edit.dataset.onlineEditNote.split(':');const arr=data.notes[cat]||[];const nv=prompt('Edit note:',arr[+i]?.text||''); if(nv!==null&&nv.trim()){arr[+i].text=nv.trim();markChanged();}return;}
+      const pri=e.target.closest&&e.target.closest('[data-online-pri]'); if(pri){e.preventDefault();e.stopImmediatePropagation();const [act,idxs]=pri.dataset.onlinePri.split(':');const i=+idxs;if(act==='del')data.priority.splice(i,1);if(act==='up'&&i>0)[data.priority[i-1],data.priority[i]]=[data.priority[i],data.priority[i-1]];if(act==='down'&&i<data.priority.length-1)[data.priority[i+1],data.priority[i]]=[data.priority[i],data.priority[i+1]];markChanged();return;}
+      const bdel=e.target.closest&&e.target.closest('[data-online-budget-del]'); if(bdel){e.preventDefault();e.stopImmediatePropagation();data.budget=data.budget.filter(x=>String(x.id)!==String(bdel.dataset.onlineBudgetDel));markChanged();return;}
+    },true);
+    document.addEventListener('keydown',function(e){
+      const inp=e.target.closest&&e.target.closest('input[id^="inp-"]'); if(inp&&e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addNote(inp.id.replace(/^inp-/,''));return;}
+      if(e.target&&e.target.id==='priorityInput'&&e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addPriority();return;}
+      if((e.target&&e.target.id==='budgetDesc'||e.target&&e.target.id==='budgetAmount')&&e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();addBudget();return;}
+    },true);
+    const pBtn=$('priorityAddBtn'); if(pBtn) pBtn.onclick=e=>{e.preventDefault();addPriority();};
+    const bBtn=document.querySelector('.budget-add-btn'); if(bBtn) bBtn.onclick=e=>{e.preventDefault();addBudget();};
+
+    ['astAccommodationBox','astTransportBox','astTravelInfoBox'].forEach(id=>{const el=$(id); if(!el)return; el.value=data.fields[id]||''; el.addEventListener('input',()=>{data.fields[id]=el.value;markChanged();});});
+    document.querySelectorAll('textarea:not(#astAccommodationBox):not(#astTransportBox):not(#astTravelInfoBox)').forEach((el,i)=>{if(!el.id)el.id='online_textarea_'+i; if(data.fields[el.id])el.value=data.fields[el.id]; el.addEventListener('input',()=>{data.fields[el.id]=el.value;markChanged();});});
+    document.querySelectorAll('input[type="checkbox"]').forEach((el,i)=>{if(!el.id)el.id='online_check_'+i; if(el.id in data.checks)el.checked=!!data.checks[el.id]; el.addEventListener('change',()=>{data.checks[el.id]=el.checked;markChanged();});});
+    renderAll(); setStatus('Online sync loading...'); loadRemote(); setInterval(loadRemote,3500);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindAll); else bindAll();
 })();
 </script>
 
